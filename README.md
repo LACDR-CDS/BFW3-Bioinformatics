@@ -1,0 +1,2 @@
+# BFW3-Bioinformatics
+Scripts for the practicals of the course Bioinformatics in the Elective Module “Computational Approaches to Drug Discovery and Development” (Biopharmaceutical science, Leiden University)

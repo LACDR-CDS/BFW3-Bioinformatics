@@ -1,0 +1,181 @@
+---
+title: "Bioinformatics CP: Data Management - Data Wrangling"
+author:
+  - name: Dario Bijker
+    orcid: 0000-0002-0319-6542
+  - name: "Gerhard Burger"
+    orcid: 0000-0003-1062-5576
+date: 2026-09-11
+date-modified: last-modified
+format: html
+editor: visual
+---
+
+## Quarto
+
+This is a Quarto document. Above, you see the metadata of this document. Quarto enables us to weave together content and executable code into a finished document. To learn more about Quarto see <https://quarto.org>. In the top right corner, you can toggle between **Source** and **Visual** to reveal the underlying code.
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+```{r}
+1 + 1
+```
+
+You can add options to executable code like this
+
+```{r}
+#| echo: false
+2 * 2
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
+
+## Libraries
+
+Try to Render this document. Likely, you will get an error stating: `there is no package called ‘rmarkdown’`. While Base R contains a number of useful functions, packages are often used to expand the functions that are available. For rendering documents, the package ‘rmarkdown’ is required. Run the code below, and try again to Render the document. You can now read the exercises in a much nicer format!
+
+```{r}
+if (!require("rmarkdown")) install.packages("rmarkdown")
+library(rmarkdown)
+```
+
+For the next exercises, create a new Quarto file. Add all your code and your answers to this file. If you don’t manage to finish the workshop, finish it at home before the next workshop! You can save intermediate versions through GitHub.
+
+**Exercise 1:** Add some metadata to your file: add your name, ORCiD, and the date.
+
+**Exercise 2:** Explain how the code above works.
+
+## Pacman and Tidyverse
+
+There are several packages we use often at CDS. You can install and load them with the below. We will continue using `tidyverse` throughout these exercises, but `pacman` is used only once. Try to find out what it does, and why we like using it.
+
+```{r}
+if (!require("pacman")) install.packages("pacman"); library(pacman)
+p_load("tidyverse")
+```
+
+**Exercise 3:** Explain what we use pacman for, and why we like using it.
+
+## Data Wrangling
+
+In the rest of this workshop we will practice data wrangling. If you find it difficult and need more practice we can recommend the following resources, as well as DataCamp:
+
+```         
+R for Data Science (strongly recommended): https://r4ds.had.co.nz
+Specifically:
+    Wrangle: https://r4ds.had.co.nz/wrangle-intro.html
+R cheat sheets: https://www.rstudio.com/resources/cheatsheets/
+    Data Import: https://github.com/rstudio/cheatsheets/raw/main/data-import.pdf
+    Data Transformation: https://github.com/rstudio/cheatsheets/raw/main/data-transformation.pdf
+```
+
+### Import (and export)
+
+It is quite easy to import files using `readr`. In the following exercises we will practice with importing an exporting data in R. Use the `IrisFiles` folder included in the GitHub repository.
+
+By default, when reading writing files in R it does so **relative** the the working directory, if using R Markdown or Quarto (like you should ;)) this working directory is equal to the directory where your R Markdown / Quarto is saved. You can check this by executing `getwd()` in a code chunk.
+
+So if your files look like this
+
+```         
+.
+├── YourCurrentFile.qmd
+├── RDMExercises.qmd 
+└── IrisFiles
+   ├── iris.csv
+   └── iris.csv.xz
+```
+
+and you're working in the `.qmd` file, you can read `IrisFiles/iris.csv` using `read_csv("IrisFiles/iris.csv")` (**NB** on Windows backslashes are replaced by forward slashes, because in programming (and in sensible operating systems such as Linux/Mac OS) backslashes are used as escape characters).
+
+It is also possible to specify an **absolute** path, for example, if you have downloaded something it will typically end up in your Downloads folder, so on your personal computer you can use for example
+
+```{r}
+#| eval: false
+# Windows
+read_csv("C:/Users/burge/Downloads/iris.csv")
+# or Linux (and probably Mac OS)
+read_csv("~/Downloads/iris.csv")
+```
+
+#### Reading CSV (comma-separated value) files
+
+**Exercise 4:** Read the file `iris.csv` into R
+
+The `readr` package can also deal with compressed files; files ending in `.gz`, `.bz2`, `.xz`, or `.zip` will be automatically uncompressed. In particular, the [LZMA2](https://en.wikipedia.org/wiki/Lempel%E2%80%93Ziv%E2%80%93Markov_chain_algorithm) enconding used in `.xz` files is very efficient; as you can see `iris.csv.xz` is more than 4 times as small as `iris.csv`.
+
+```{r}
+#| eval: false
+p_load(fs) #< very nice package to do things with the file system (fs)
+file_info(dir_ls("files", glob = "files/iris.*")) %>% select(path, size)
+```
+
+**Exercise 5:** Read the file `iris.csv.xz` into R.
+
+### Tidy
+
+See the `cw_w` and `cw_l` datasets:
+
+```{r}
+(cw_l <- ChickWeight %>% as_tibble())
+(cw_w <- cw_l %>% pivot_wider(names_from = Time, values_from = weight))
+```
+
+Now let's try to convert `cw_w` back to long with
+
+```{r}
+cw_w %>% pivot_longer(c(-Chick, -Diet), names_to = "Time", values_to = "weight")
+```
+
+**Exercise 6:** In which 2 ways is the result different from `cw_l` and why?
+
+Consider the `iris` dataset, you can put it in your environment with `data(iris)`. Or more conveniently you can create a tibble version using
+
+```{r}
+iris_tbl <- as_tibble(iris)
+iris_tbl
+```
+
+In tidy data:
+
+1.  Each variable is a column; each column is a variable.
+2.  Each observation is a row; each row is an observation.
+3.  Each value is a cell; each cell is a single value.
+
+**Exercise 7:** Is `iris` tidy and why? Is `iris` long or wide?
+
+**Exercise 8** As it turns out, although `iris` can be considered tidy, it is possible to make iris longer. Reformat the data to this longer format, one value per row. Store the result in the variable `iris_longer`. What are the dimensions of the original `iris` and the "longer" data? (Tip: Always use the CheetSheets linked above. Here, `pivot_longer()` is needed.)
+
+**Exercise 9:** Why is it not possible to recreate the original format using the `iris_longer` tbl? (Hint: try it! What happens?)
+
+**Exercise 10:** (**Optional challenge**) Modify the original `iris` in such a way that the long format could be reformatted back to the wide format (Hint: use `?rowid_to_column`). Recreate the `iris_longer` table using this modified `iris` table, then recreate the original wide format and store it in a variable named `iris_wide`.
+
+**Exercise 11:** Is `iris_longer` tidy (remember the 3 criteria)? Can you make it even more tidy using the `separate` function? (there is also a `unite` function, which does the opposite of `separate`)
+
+### Transform
+
+**Exercise 12:** It’s possible that the columns and column order of `iris_wide` doesn’t match the original `iris`. Can you make the them match? (Hint: Use `select`. You could additionally use `relocate`)
+
+**Exercise 13:** Show the flowers of species `setosa` that have `Sepal.Length` bigger than or equal to 5.0 (Use whichever data set you like. Hint: Use `filter` to show only a subset of a data set. use `?Comparison` to find the right operator.)
+
+**Exercise 14:** You can invert the value of a TRUE/FALSE value (boolean) by using the `!` operator. Can you invert one of the conditions from the previous exercise?
+
+**Exercise 15:** Sometimes you want to filter for multiple species. For this you can use the `%in%` operator. Can you filter `iris` to show `setosa` and `versicolor`?
+
+**Exercise 16:** Can you sort (`arrange`) iris with largest Sepal.Width first?
+
+**Exercise 17:** Create new columns with Sepal.Length \* Sepal.Width, and Petal.Length \* Petal.Width. What is the difference between `mutate` and `transmute`?
+
+**Exercise 18:** We can use `group_by` and `summarise` to calculate the average of each measurement per `Species`. Do this first for `iris_wide` then for `iris_longer`. Which is more convenient?
+
+**Exercise 19:** `tidyr` 1.0.0 introduced a new `across` function that should make this easier (<https://www.tidyverse.org/blog/2020/04/dplyr-1-0-0-colwise/>). Use `across` on `iris_wide` to repeat the summary from the previous question.
+
+**Exercise 20:** Can you **filter** the `iris` dataset to keep the flowers that have a larger `Sepal.Length` than the average *of their species*? (Hint: You don’t need summarize!)
+
+**Exercise 21:** From the previous question, how many flowers are in each group? Use `n()`, `tally()` or `count()`. Do you need the `group_by` again?
+
+### Github
+
+**Exercise 22:** Save your file, return to GitHub Desktop and Commit the changes to your private repository.
